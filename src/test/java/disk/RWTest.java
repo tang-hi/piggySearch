@@ -5,10 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-
-class ReaderAndWriterTest {
+class RWTest {
 
     Writer mockWriter;
 
@@ -72,27 +71,49 @@ class ReaderAndWriterTest {
     public void writeAndRead() throws IOException {
         // simple
         mockWriter.writeByte((byte) 0x1234);
-        assertEquals((byte)0x1234, mockReader.readByte());
-
         mockWriter.writeInt(100);
+        mockWriter.writeVInt(9999);
+        mockWriter.writeZInt(-8888);
+        mockWriter.writeLong(0x00FFFFFFL);
+        mockWriter.writeVLong(0x00FFFFFEL);
+        mockWriter.writeZLong(0x00F8FFFEL);
+        mockWriter.writeString("hello,你好");
+        mockWriter.writeTlong(Writer.SECOND * 5);
+        mockWriter.writeTlong(Writer.DAY * 240);
+        mockWriter.writeZFloat(124.0f);
+        mockWriter.writeZDouble(45.0d);
+        mockWriter.writeZFloat(349.4f);
+        mockWriter.writeZDouble(498.3214313d);
+        mockWriter.writeZFloat(-874.312f);
+        mockWriter.writeZDouble(-9819.33423854328d);
+
+        assertEquals((byte)0x1234, mockReader.readByte());
         assertEquals(100, mockReader.readInt());
 
-        mockWriter.writeVInt(9999);
         assertEquals(9999, mockReader.readVInt());
 
-        mockWriter.writeZInt(-8888);
         assertEquals(-8888, mockReader.readZInt());
 
-        mockWriter.writeLong(0x00FFFFFFL);
         assertEquals(0x00FFFFFFL, mockReader.readLong());
 
-        mockWriter.writeVLong(0x00FFFFFEL);
         assertEquals(0x00FFFFFEL, mockReader.readVLong());
 
-        mockWriter.writeZLong(0x00F8FFFEL);
         assertEquals(0x00F8FFFEL, mockReader.readZLong());
 
-        mockWriter.writeString("hello,你好");
         assertEquals("hello,你好", mockReader.readString());
+
+        assertEquals(5*Writer.SECOND , mockReader.readTLong());
+        assertEquals(240*Writer.DAY, mockReader.readTLong());
+
+        assertEquals(124.0f, mockReader.readZFloat());
+        assertEquals(45.0d, mockReader.readZDouble());
+        assertEquals(349.4f, mockReader.readZFloat());
+        assertEquals(498.3214313d , mockReader.readZDouble());
+        assertEquals(-874.312f, mockReader.readZFloat());
+        assertEquals(-9819.33423854328d, mockReader.readZDouble());
+
+        System.out.println("RW-test pass");
     }
+
+
 }
