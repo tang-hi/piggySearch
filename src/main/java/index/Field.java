@@ -42,7 +42,7 @@ public class Field implements IndexableField{
     }
 
     @Override
-    public BytesRef byteValue() {
+    public BytesRef binaryValue() {
         if (fieldData instanceof BytesRef) {
             return (BytesRef) fieldData;
         }

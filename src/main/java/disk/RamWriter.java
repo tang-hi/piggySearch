@@ -15,16 +15,13 @@ public class RamWriter extends Writer{
 
     private ByteBuffer curBlock;
 
-    private long pos;
-
-    private long offset;
+    private long size;
 
     public RamWriter() {
        blocks = new ArrayDeque<>();
        curBlock = ByteBuffer.allocate(BLOCK_SIZE).order(ByteOrder.LITTLE_ENDIAN);
        blocks.add(curBlock);
-       pos = 0;
-       offset = -1;
+       size = 0;
     }
 
     @Override
@@ -33,8 +30,7 @@ public class RamWriter extends Writer{
             growBlocks();
         }
         curBlock.put(b);
-        pos++;
-        offset++;
+        size++;
     }
 
     @Override
@@ -55,12 +51,14 @@ public class RamWriter extends Writer{
         return result;
     }
 
-    public long getPos() {
-        return pos;
+    @Override
+    public void close() {
+        blocks = null;
     }
 
-    public long getOffset() {
-        return offset;
+    @Override
+    public long size() {
+        return size;
     }
 
     private boolean hasRemaining() {

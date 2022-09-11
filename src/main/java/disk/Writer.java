@@ -4,6 +4,8 @@ import util.BitUtils;
 import util.BytesRef;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.List;
 
 public abstract class Writer {
 
@@ -15,9 +17,17 @@ public abstract class Writer {
     static final int HOUR_ENCODING = 0x80;
     static final int DAY_ENCODING = 0xC0;
 
+    public abstract void close();
+
+    public abstract long size();
+
     public abstract void writeByte(byte b) throws IOException;
 
     public abstract void writeBytes(byte[] b, int offset, int length) throws  IOException;
+
+    public List<ByteBuffer> toByteBuffer() {
+        return null;
+    }
 
     public void writeBytes(byte[] b, int length) throws IOException {
         writeBytes(b, 0, length);

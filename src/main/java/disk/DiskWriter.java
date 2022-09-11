@@ -8,15 +8,13 @@ import java.nio.channels.FileChannel;
 
 public class DiskWriter extends Writer{
 
-    private RamWriter writer;
-
-    private boolean flushed;
-
     private String file;
 
     private FileChannel out;
 
     private RandomAccessFile raf;
+
+    private byte[] singleByte;
     public DiskWriter(String file) throws IOException {
         //file check
         this.file = file;
@@ -24,26 +22,41 @@ public class DiskWriter extends Writer{
 
        out = raf.getChannel();
        out.truncate(0);
-       writer = new RamWriter();
-       flushed = false;
+       singleByte = new byte[1];
+    }
+
+    @Override
+    public void close() {
+        try {
+            flush();
+        } catch (IOException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    @Override
+    public long size() {
+        try {
+            return out.position() ;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void writeByte(byte b) throws IOException {
-        assert flushed == false;
-        writer.writeByte(b);
+        singleByte[0] = b;
+        out.write(ByteBuffer.wrap(singleByte));
     }
 
     @Override
     public void writeBytes(byte[] b, int offset, int length) throws IOException {
-        writer.writeBytes(b, offset, length);
+        for(int i = 0; i < length; i++) {
+            writeByte(b[offset+i]);
+        }
     }
 
     public void flush() throws IOException {
-        assert flushed == false;
-        for(ByteBuffer bb : writer.toByteBuffers()) {
-            out.write(bb);
-        }
         out.close();
         raf.close();
     }
