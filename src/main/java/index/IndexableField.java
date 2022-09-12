@@ -11,7 +11,7 @@ public interface IndexableField {
 
     FieldType fieldType();
 
-    BytesRef byteValue();
+    BytesRef binaryValue();
 
     Number numericValue();
 }
