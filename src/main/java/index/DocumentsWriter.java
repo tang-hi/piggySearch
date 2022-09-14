@@ -4,21 +4,35 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DocumentsWriter {
-    private DocumentsWriterPerThreadPool dwptPool;
+    public DocumentsWriterDeleteQueue deleteQueue;
+    DocumentsWriterPerThreadPool perThreadPool;
 
     final DocumentsWriterFlushControl flushControl;
+
+    private final FlushNotifications flushNotifications;
+
+    private final AtomicInteger numDocsInRAM = new AtomicInteger(0);
 
     private AtomicInteger numDocs = new AtomicInteger(0);
 
     public DocumentsWriter() {
-        dwptPool = new DocumentsWriterPerThreadPool();
+        perThreadPool =new DocumentsWriterPerThreadPool(
+                () -> {
+//                    final FieldInfos.Builder infos = new FieldInfos.Builder(globalFieldNumberMap);
+                    return new DocumentsWriterPerThread(
+//                            indexCreatedVersionMajor,
+//                            segmentNameSupplier.get(),
+//                            directoryOrig,
+//                            directory,
+//                            config,
+                            deleteQueue
+//                            infos,
+//                            pendingNumDocs,
+//                            enableTestPoints
+                    );
+                });
         flushControl = new DocumentsWriterFlushControl(this);
-    }
-
-    public void addDoc(Iterable<? extends IndexableField> doc) throws IOException {
-        DocumentsWriterPerThread dwpt = dwptPool.getAndLock();
-        dwpt.addDoc(doc, numDocs.incrementAndGet());
-        dwptPool.free(dwpt);
+        flushNotifications = null;
     }
 
     long updateDocuments(
@@ -39,14 +53,12 @@ public class DocumentsWriter {
                 seqNo =
                         dwpt.updateDocuments(docs, delNode, flushNotifications, numDocsInRAM::incrementAndGet);
             } finally {
-                if (dwpt.isAborted()) {
-                    flushControl.doOnAbort(dwpt);
-                }
+
             }
             final boolean isUpdate = delNode != null && delNode.isDelete();
             flushingDWPT = flushControl.doAfterDocument(dwpt, isUpdate);
         } finally {
-            if (dwpt.isFlushPending() || dwpt.isAborted()) {
+            if (dwpt.isFlushPending()) {
                 dwpt.unlock();
             } else {
                 perThreadPool.marksAsFreeAndUnlock(dwpt);
@@ -58,5 +70,8 @@ public class DocumentsWriter {
 //            seqNo = -seqNo;
 //        }
         return seqNo;
+    }
+
+    interface FlushNotifications {
     }
 }
