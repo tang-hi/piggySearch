@@ -52,5 +52,10 @@ public class DocumentsWriterFlushControl {
             }
         }
 //        throw new AlreadyClosedException("flush control is closed");
+        throw new RuntimeException("can't get thread");
+    }
+
+    public DocumentsWriterPerThread doAfterDocument(DocumentsWriterPerThread perThread, boolean isUpdate) {
+        return null;
     }
 }

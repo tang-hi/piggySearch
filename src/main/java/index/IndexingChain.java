@@ -65,9 +65,9 @@ public class IndexingChain {
     }
 
     private boolean processField(int docID, IndexableField field, PerField pf) throws IOException {
-        FieldType type = field.fieldType();
+        IndexableFieldType type = field.fieldType();
 
-        if(type.isStored()) {
+        if(type.stored()) {
             String value  =field.stringValue();
             if(value != null && value.length() > 20000) {
                 throw new IllegalArgumentException("too large field string value");
